@@ -52,6 +52,7 @@ namespace Hai.MFPB
         {
             if (EditorApplication.isPlaying)
             {
+                Debug.Log("(MFPB) Running Play Mode execution path. This will execute PlayModeTrigger.Rescan");
                 // Run VRCFury by making the Rescan method think that the scene only contains one avatar
                 // by lying when VFGameObject.GetRoots(Scene) is invoked.
                 var rescanMethod = typeof(PlayModeTrigger).GetMethod("Rescan", BindingFlags.Static | BindingFlags.NonPublic);
@@ -77,6 +78,7 @@ namespace Hai.MFPB
             }
             else
             {
+                Debug.Log("(MFPB) Running Edit Mode execution path. This will execute PreuploadHook.OnPreprocessAvatar");
                 new PreuploadHook().OnPreprocessAvatar(ctx.AvatarRootObject);
             }
         }
@@ -85,9 +87,12 @@ namespace Hai.MFPB
     [HarmonyPatch(typeof(PreuploadHook), nameof(PreuploadHook.OnPreprocessAvatar))]
     public class MFPBPreuploadHookPatch
     {
-        static bool Prefix(GameObject _vrcCloneObject)
+        static bool Prefix(GameObject _vrcCloneObject, ref bool __result)
         {
             if (MFPB.EmergencyStop) return true;
+
+            Debug.Log("(MFPB) MFPBPreuploadHookPatch.OnPreprocessAvatar intercepted, will skip and return true.");
+            __result = true;
             
             return false;
         }
@@ -128,7 +133,7 @@ namespace Hai.MFPB
 
             if (isInterceptionMode)
             {
-                Debug.Log($"(MFPB) MFPBVFGameObjectPatch.GetRoots intercepted, will return avatarRoot={avatarRoot}.");
+                Debug.Log($"(MFPB) MFPBVFGameObjectPatch.GetRoots intercepted, will skip and return avatarRoot={avatarRoot}.");
     
                 __result = new[]
                 {
