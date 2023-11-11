@@ -1,7 +1,7 @@
 ﻿Modular Fury, Please Behave!
 =====
 
-Barges into Modular Avatar and VRCFury compatibility issues by turning VRCFury into a NDMF plugin.
+Barges into Modular Avatar and VRCFury compatibility issues by turning VRCFury into a NDMF plugin using Harmony patching.
 
 ## What does this do?
 
