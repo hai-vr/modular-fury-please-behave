@@ -1,5 +1,5 @@
 {
-    "name": "NewAssembly",
+    "name": "MFPB",
     "references": [
         "nadena.dev.ndmf",
         "nadena.dev.ndmf.runtime",
