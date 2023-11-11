@@ -15,6 +15,7 @@ using System.Reflection;
 using Hai.MFPB;
 using HarmonyLib;
 using nadena.dev.ndmf;
+using nadena.dev.ndmf.config;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -35,14 +36,81 @@ namespace Hai.MFPB
     [InitializeOnLoad]
     public static class MFPB
     {
+        private const string ToolsMfPleaseBehaveFuryBeforeMAPath = "Tools/MF Please Behave!/Order: VRCFury -> Modular Avatar";
+        private const string ToolsMfPleaseBehaveFuryAfterMAPath = "Tools/MF Please Behave!/Order: Modular Avatar -> VRCFury";
         public static bool EmergencyStop;
-        public static MFPBFuryShouldRun VRCFuryShouldRun = MFPBFuryShouldRun.BeforeModularAvatar;
-        
+
+        public static MFPBFuryShouldRun VrcFuryShouldRun
+        {
+            get => MFPBConfig.instance.VRCFuryShouldRun;
+            private set => MFPBConfig.instance.VRCFuryShouldRun = value;
+        }
+
         static MFPB()
         {
             var harmony = new Harmony("dev.hai-vr.mfpb");
             var assembly = Assembly.GetExecutingAssembly();
             harmony.PatchAll(assembly);
+            
+            ResetChecked();
+        }
+
+        [MenuItem(ToolsMfPleaseBehaveFuryBeforeMAPath, false, 2)]
+        private static void FuryBeforeMA()
+        {
+            VrcFuryShouldRun = MFPBFuryShouldRun.BeforeModularAvatar;
+            ResetChecked();
+        }
+
+        [MenuItem(ToolsMfPleaseBehaveFuryAfterMAPath, false, 2)]
+        private static void FuryAfterMA()
+        {
+            VrcFuryShouldRun = MFPBFuryShouldRun.AfterModularAvatar;
+            ResetChecked();
+        }
+
+        private static void ResetChecked()
+        {
+            Menu.SetChecked(ToolsMfPleaseBehaveFuryBeforeMAPath, VrcFuryShouldRun == MFPBFuryShouldRun.BeforeModularAvatar);
+            Menu.SetChecked(ToolsMfPleaseBehaveFuryAfterMAPath, VrcFuryShouldRun == MFPBFuryShouldRun.AfterModularAvatar);
+        }
+    }
+    
+    internal class MFPBConfig : ScriptableSingleton<MFPBConfig>
+    {
+        [SerializeField] public MFPBFuryShouldRun VRCFuryShouldRun = MFPBFuryShouldRun.BeforeModularAvatar;
+    }
+
+    public class MFPBPlugin : Plugin<MFPBPlugin>
+    {
+        protected override void Configure()
+        {
+            if (MFPB.EmergencyStop) return;
+
+            InPhase(BuildPhase.Generating)
+                .BeforePlugin("nadena.dev.modular-avatar")
+                .Run("MFPB-BeforeMA", ctx =>
+                {
+                    if (MFPB.VrcFuryShouldRun == MFPBFuryShouldRun.BeforeModularAvatar)
+                    {
+                        DoExecuteVRCFury(ctx);
+                    }
+                });
+            InPhase(BuildPhase.Transforming)
+                .AfterPlugin("nadena.dev.modular-avatar")
+                .Run("MFPB-AfterMA", ctx =>
+                {
+                    if (MFPB.VrcFuryShouldRun == MFPBFuryShouldRun.AfterModularAvatar)
+                    {
+                        DoExecuteVRCFury(ctx);
+                    }
+                });
+        }
+
+        private static void DoExecuteVRCFury(BuildContext ctx)
+        {
+            Debug.Log($"(MFPB) Running MFPB. MFPB.VRCFuryShouldRun={MFPB.VrcFuryShouldRun}");
+            MFPBFury.RunVRCFury(ctx);
         }
     }
     
@@ -91,6 +159,12 @@ namespace Hai.MFPB
         {
             if (MFPB.EmergencyStop) return true;
 
+            if (EditorApplication.isPlaying && !Config.ApplyOnPlay)
+            {
+                Debug.Log($"(MFPB) MFPBPreuploadHookPatch.OnPreprocessAvatar intercepted in Play Mode (probably caused by Av3 Emulator), but NDMF.Config.ApplyOnPlay={Config.ApplyOnPlay}, will continue normally.");
+                return true;
+            }
+
             Debug.Log("(MFPB) MFPBPreuploadHookPatch.OnPreprocessAvatar intercepted, will skip and return true.");
             __result = true;
             
@@ -106,6 +180,12 @@ namespace Hai.MFPB
         static bool Prefix(Scene scene)
         {
             if (MFPB.EmergencyStop) return true;
+
+            if (EditorApplication.isPlaying && !Config.ApplyOnPlay)
+            {
+                Debug.Log($"(MFPB) MFPBPlayModeTriggerPatch.Rescan intercepted in Play Mode, but NDMF.Config.ApplyOnPlay={Config.ApplyOnPlay}, will continue normally.");
+                return true;
+            }
 
             var passThrough = isPassThroughMode;
             if (isPassThroughMode)
@@ -141,41 +221,12 @@ namespace Hai.MFPB
                 };
                 return false;
             }
+            else
+            {
+                Debug.Log($"(MFPB) MFPBVFGameObjectPatch.GetRoots intercepted, but not in interception mode, will continue normally.");
+            }
 
             return true;
-        }
-    }
-
-    public class MFPBPlugin : Plugin<MFPBPlugin>
-    {
-        protected override void Configure()
-        {
-            if (MFPB.EmergencyStop) return;
-
-            InPhase(BuildPhase.Generating)
-                .BeforePlugin("nadena.dev.modular-avatar")
-                .Run("MFPB-BeforeMA", ctx =>
-                {
-                    if (MFPB.VRCFuryShouldRun == MFPBFuryShouldRun.BeforeModularAvatar)
-                    {
-                        DoExecuteVRCFury(ctx);
-                    }
-                });
-            InPhase(BuildPhase.Transforming)
-                .AfterPlugin("nadena.dev.modular-avatar")
-                .Run("MFPB-AfterMA", ctx =>
-                {
-                    if (MFPB.VRCFuryShouldRun == MFPBFuryShouldRun.AfterModularAvatar)
-                    {
-                        DoExecuteVRCFury(ctx);
-                    }
-                });
-        }
-
-        private static void DoExecuteVRCFury(BuildContext ctx)
-        {
-            Debug.Log($"(MFPB) Running MFPB. MFPB.VRCFuryShouldRun={MFPB.VRCFuryShouldRun}");
-            MFPBFury.RunVRCFury(ctx);
         }
     }
 }
