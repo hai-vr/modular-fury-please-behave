@@ -32,11 +32,11 @@ Using Harmony code patching, the following is done:
 
 ### During uploads
 
-- Prevent `VF.VrcHooks.PreuploadHook.OnPreprocessAvatar` from running (and return true in place indicating a success).
-
-- Prevent `VF.PlayModeTrigger.Rescan` from running (and return true in place indicating a success), but:
+- Prevent `VF.VrcHooks.PreuploadHook.OnPreprocessAvatar` from running (and return true in place indicating a success), but:
   - When NDMF is processing an avatar:
     - Internally instantiate `VF.VrcHooks.PreuploadHook` and call `VF.VrcHooks.PreuploadHook.OnPreprocessAvatar` by ourselves.
+
+- Prevent `VF.PlayModeTrigger.Rescan` from running.
 
 ### In both cases
 
