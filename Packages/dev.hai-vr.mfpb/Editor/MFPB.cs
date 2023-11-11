@@ -146,8 +146,18 @@ namespace Hai.MFPB
             }
             else
             {
+                
                 Debug.Log("(MFPB) Running Edit Mode execution path. This will execute PreuploadHook.OnPreprocessAvatar");
-                new PreuploadHook().OnPreprocessAvatar(ctx.AvatarRootObject);
+
+                try
+                {
+                    MFPBPreuploadHookPatch.isPassThroughMode = true;
+                    new PreuploadHook().OnPreprocessAvatar(ctx.AvatarRootObject);
+                }
+                finally
+                {
+                    MFPBPreuploadHookPatch.isPassThroughMode = false;
+                }
             }
         }
     }
@@ -155,6 +165,8 @@ namespace Hai.MFPB
     [HarmonyPatch(typeof(PreuploadHook), nameof(PreuploadHook.OnPreprocessAvatar))]
     public class MFPBPreuploadHookPatch
     {
+        public static bool isPassThroughMode;
+        
         static bool Prefix(GameObject _vrcCloneObject, ref bool __result)
         {
             if (MFPB.EmergencyStop) return true;
@@ -164,11 +176,18 @@ namespace Hai.MFPB
                 Debug.Log($"(MFPB) MFPBPreuploadHookPatch.OnPreprocessAvatar intercepted in Play Mode (probably caused by Av3 Emulator), but NDMF.Config.ApplyOnPlay={Config.ApplyOnPlay}, will continue normally.");
                 return true;
             }
-
-            Debug.Log("(MFPB) MFPBPreuploadHookPatch.OnPreprocessAvatar intercepted, will skip and return true.");
-            __result = true;
             
-            return false;
+            var passThrough = isPassThroughMode;
+            if (isPassThroughMode)
+            {
+                Debug.Log("(MFPB) MFPBPlayModeTriggerPatch.Rescan intercepted, will pass through.");
+            }
+            else
+            {
+                Debug.Log("(MFPB) MFPBPreuploadHookPatch.OnPreprocessAvatar intercepted, will skip and return true.");
+                __result = true;
+            }
+            return passThrough;
         }
     }
 
