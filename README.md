@@ -25,8 +25,8 @@ Using Harmony code patching, the following is done:
 
 - Prevent `VF.PlayModeTrigger.Rescan` from running if `nadena.dev.ndmf.config.Config.ApplyOnPlay` is true, but:
   - When NDMF is processing an avatar: 
-    - Temporaily rig `VF.Builder.VFGameObject.GetRoots(Scene)` to return the an array containing only the avatar being processed by NDMF (instead of all the avatars in the scene).
-    - Internally call `VF.PlayModeTrigger.Rescan(Scene=null)` by ourselves when executing NDMF is processing an avatar.
+    - Temporaily rig `VF.Builder.VFGameObject.GetRoots(Scene)` to return an array containing only the avatar being processed by NDMF (instead of all the avatars in the scene).
+    - Internally call `VF.PlayModeTrigger.Rescan(Scene=null)` by ourselves when NDMF is processing an avatar.
       - `VF.PlayModeTrigger.Rescan` will internally call `VF.Builder.VFGameObject.GetRoots(null)`, which will return only that avatar.
   - If NDMF processes multiple avatars, `VF.PlayModeTrigger.Rescan` will be executed multiple times.
 
