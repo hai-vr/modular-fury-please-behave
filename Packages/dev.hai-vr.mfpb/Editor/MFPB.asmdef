@@ -1,0 +1,23 @@
+{
+    "name": "NewAssembly",
+    "references": [
+        "nadena.dev.ndmf",
+        "nadena.dev.ndmf.runtime",
+        "VRCFury",
+        "VRCFury-Editor",
+        "VRC.SDK3A"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "0Harmony.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
