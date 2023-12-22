@@ -1,16 +1,14 @@
 {
   "name": "dev.hai-vr.mfpb",
-  "displayName": "Haï ~ Modular Fury, Please Behave! (Alpha)",
-  "version": "1.2.9900",
+  "displayName": "Haï ~ MFPB (Discontinued)",
+  "version": "1.2.999999",
   "unity": "2019.4",
-  "description": "Barges into Modular Avatar and VRCFury compatibility issues by turning VRCFury into a NDMF plugin https://docs.hai-vr.dev/docs/products/mfpb",
+  "description": "This package is discontinued (formerly Modular Fury Please Behave) https://github.com/VRCFury/VRCFury/commit/cea3d207626e28e25dc652a7acd851462928c576",
   "vrchatVersion" : "2022.1.1",
   "author" : {
     "name" : "Haï~"
   },
   "vpmDependencies": {
-    "nadena.dev.ndmf": "~1.2.3",
-    "com.vrchat.avatars": "^3.3.0"
   },
   "url" : "https://docs.hai-vr.dev/docs/products/mfpb"
 }
